@@ -2,6 +2,7 @@
 #include "common.h"
 #include "ip/EP952api.h"
 #include "hdmi_ep952.h"
+#include "common.h"
 #include "log.h"
 
 typedef struct {
@@ -29,7 +30,6 @@ int ep952CoreInit(void)
 	hdmiEP952 = dr_mallocz(sizeof(DR_HDMI_EP592));
 
 	EP_HDMI_Init();
-	EP_EP952_Reset();
 
 	hdmiEP952->threadRuning = 1;
 	ret = dr_thread_create("hdmi,ep952", &hdmiEP952->threadId, ep952CoreThread, NULL);

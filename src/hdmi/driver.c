@@ -24,6 +24,7 @@
 #include <linux/platform_device.h>
 
 #include "ep952_core.h"
+#include "hisi_i2c.h"
 #include "log.h"
 
 #define HDMI_MODULE_NAME "hdmi,ep952"
@@ -92,6 +93,7 @@ static int __init device_driver_init(void)
 {
 	int result = -1;
 	dev_t dev;
+	unsigned int sourceRegs = 0, sourceRegsSize = 0, sourceMapRegs = 0;
 
 	if (hdmi_major) {
 		dev = MKDEV(hdmi_major, hdmi_minor);
@@ -123,6 +125,18 @@ static int __init device_driver_init(void)
 	}
 
 	device_create(s_dev_data.class, NULL, dev, NULL, HDMI_DEVICE_NAME);
+
+	hisi_i2c_get_reg(&sourceRegs, &sourceRegsSize);
+	if (!request_mem_region(sourceRegs, sourceRegsSize, "hdmi,ep952")) {
+		LogFormat(ERROR, "%s:%d\n", __FILE__, __LINE__);
+		return -1;
+	}
+
+	sourceMapRegs = (unsigned int)ioremap(sourceRegs, sourceRegsSize);
+	if (!sourceMapRegs) {
+		LogFormat(ERROR, "%s:%d\n", __FILE__, __LINE__);
+		return -1;
+	}
 
 	result = ep952CoreInit();
 	if (result) {
