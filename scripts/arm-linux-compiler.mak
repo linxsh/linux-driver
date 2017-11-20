@@ -1,0 +1,9 @@
+CROSS_COMPILE?=$(DR_CROSS_COMPILE)
+CC     = $(CROSS_COMPILE)gcc
+CPP    = $(CROSS_COMPILE)g++
+LD     = $(CROSS_COMPILE)ld
+AR     = $(CROSS_COMPILE)ar
+RANLIB = $(CROSS_COMPILE)ranlib
+
+LDFLAGS =
+LIBS    = -lpthread

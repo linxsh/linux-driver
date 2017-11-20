@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# 安装路径
+
+DR_SRC_PATH=$(cd `dirname $0`; pwd)
+DR_MODULE=hdmi
+
+function set_env() {
+	if [ "$1" = "hisi" ]; then
+		DR_KERNEL_PATH="/home/linxsh/sdk/Hi3519V101R001C01SPC030/01.software/board/Hi3519V101_SDK_V1.0.3.0/osdrv/opensource/kernel/linux-3.18.y"
+		DR_CROSS_COMPILE=arm-hisiv500-linux-uclibcgnueabi-
+		DR_ARCH=arm
+		DR_OS=linux
+	elif [ "$1" = "pc" ]; then
+		DR_KERNEL_PATH="/lib/modules/$(uname -r)/build"
+		DR_CROSS_COMPILE=
+		DR_ARCH=x86
+		DR_OS=linux
+	else
+		echo "./build $DR_MODULE [hisi | pc]"
+		exit 1
+	fi
+
+	export DR_KERNEL_PATH DR_SRC_PATH DR_CROSS_COMPILE DR_ARCH DR_OS DR_MODULE
+}
+
+function build_clean() {
+	cd $DR_SRC_PATH
+	rm -rf linux/.tmp_versions/
+	find -name "*.o" -delete -or \
+	-name "*.cmd" -delete -or \
+	-name "*.ko" -delete -or \
+	-name "*.mod.c" -delete -or \
+	-name "Module.symvers" -delete -or \
+	-name "modules.order" -delete
+}
+
+function build() {
+	cd $DR_SRC_PATH
+	echo "Build Linux Driver...."
+	make -C linux clean
+	make -C linux || exit 1
+	make -C linux $1 || exit 1
+	cp ./include demos -rf
+	cp ./linux/$DR_MODULE.ko demos/lib/
+}
+
+if [ "$1" = "$DR_MODULE" ]; then
+	set_env $2
+	build $1
+	exit 1
+elif [ "$1" = "clean" ]; then
+	build_clean
+	exit 1
+else
+	echo "./build $DR_MODULE [hisi | pc]"
+	exit 1
+fi
+
+build $@
