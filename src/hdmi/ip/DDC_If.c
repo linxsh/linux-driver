@@ -245,6 +245,7 @@ SMBUS_STATUS DDC_Write(unsigned char IICAddr, unsigned char ByteAddr, unsigned c
 	
 	unsigned char status = 0;
 
+	status = hisi_i2c_write(IICAddr, ByteAddr, Data, Size);
 
 	return status;
 }
@@ -259,7 +260,7 @@ SMBUS_STATUS DDC_Read(unsigned char IICAddr, unsigned char ByteAddr, unsigned ch
 
 	unsigned char status = 0;
 
+	status = hisi_i2c_read(IICAddr, ByteAddr, Data, Size);
 
 	return status;
-
 }

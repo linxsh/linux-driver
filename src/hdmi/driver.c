@@ -26,6 +26,7 @@
 #include "ep952_core.h"
 #include "hisi_i2c.h"
 #include "log.h"
+#include "common.h"
 
 #define HDMI_MODULE_NAME "hdmi,ep952"
 #define HDMI_CLASS_NAME  "hdmi:ep952"
@@ -43,6 +44,9 @@ typedef struct {
 } DEV_PRIV;
 
 static DEV_PRIV s_dev_data;
+static unsigned int sourceRegs = 0;
+static unsigned int sourceRegsSize = 0;
+static unsigned int sourceMapRegs = 0;
 
 static int hdmi_open(struct inode *inode, struct file *filp)
 {
@@ -93,7 +97,6 @@ static int __init device_driver_init(void)
 {
 	int result = -1;
 	dev_t dev;
-	unsigned int sourceRegs = 0, sourceRegsSize = 0, sourceMapRegs = 0;
 
 	if (hdmi_major) {
 		dev = MKDEV(hdmi_major, hdmi_minor);
@@ -127,16 +130,26 @@ static int __init device_driver_init(void)
 	device_create(s_dev_data.class, NULL, dev, NULL, HDMI_DEVICE_NAME);
 
 	hisi_i2c_get_reg(&sourceRegs, &sourceRegsSize);
+#ifdef arm_linux
 	if (!request_mem_region(sourceRegs, sourceRegsSize, "hdmi,ep952")) {
 		LogFormat(ERROR, "%s:%d\n", __FILE__, __LINE__);
 		return -1;
 	}
 
 	sourceMapRegs = (unsigned int)ioremap(sourceRegs, sourceRegsSize);
+#endif
+
+#ifdef x86_linux
+	hisi_i2c_get_reg(&sourceRegs, &sourceRegsSize);
+	sourceMapRegs = (unsigned int)dr_mallocz(sourceRegsSize);
+#endif
+
 	if (!sourceMapRegs) {
 		LogFormat(ERROR, "%s:%d\n", __FILE__, __LINE__);
 		return -1;
 	}
+
+	hisi_i2c_set_reg(sourceMapRegs);
 
 	result = ep952CoreInit();
 	if (result) {
@@ -149,6 +162,16 @@ static int __init device_driver_init(void)
 
 static void __exit device_driver_exit(void)
 {
+#ifdef arm_linux
+	gx_iounmap(sourceMapRegs);
+
+	release_mem_region(sourceRegs, sourceRegsSize);
+#endif
+
+#ifdef x86_linux
+	dr_free((void *)sourceMapRegs);
+#endif
+
 	ep952CoreDestory();
 
 	unregister_chrdev_region(MKDEV(hdmi_major, hdmi_minor), 1);

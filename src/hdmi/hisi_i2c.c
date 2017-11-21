@@ -103,12 +103,12 @@ int hisi_i2c_init_reg(void)
 
 int hisi_i2c_read(unsigned char IICAddr, unsigned char ByteAddr, unsigned char *Data, unsigned int Size)
 {
-	LogFormat(INFO, "I2C Write 0x%02x ,0x%02X, 0x%02X, %d\r\n", IICAddr, ByteAddr, Data[0], Size);
+//	LogFormat(INFO, "I2C Write 0x%02x ,0x%02X, 0x%02X, %d\r\n", IICAddr, ByteAddr, Data[0], Size);
 	return 0;
 }
 
 int hisi_i2c_write(unsigned char IICAddr, unsigned char ByteAddr, unsigned char *Data, unsigned int Size)
 {
-	LogFormat(INFO, "I2C Read 0x%02X, 0x%02X, 0x%02X, %d\r\n",IICAddr, ByteAddr, Data[0], Size);
+//	LogFormat(INFO, "I2C Read 0x%02X, 0x%02X, 0x%02X, %d\r\n",IICAddr, ByteAddr, Data[0], Size);
 	return 0;
 }
