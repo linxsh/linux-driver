@@ -3,7 +3,7 @@ base-objs += ../src/common/log.o
 
 base-objs += ../src/hdmi/driver.o
 base-objs += ../src/hdmi/ep952_core.o
-base-objs += ../src/hdmi/hisi_i2c.o
+base-objs += ../src/hdmi/i2c.o
 base-objs += ../src/hdmi/ip/DDC_If.o
 base-objs += ../src/hdmi/ip/Edid.o
 base-objs += ../src/hdmi/ip/EP952api.o

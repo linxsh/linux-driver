@@ -24,7 +24,7 @@
 #include <linux/platform_device.h>
 
 #include "ep952_core.h"
-#include "hisi_i2c.h"
+#include "i2c.h"
 #include "log.h"
 #include "common.h"
 
@@ -129,18 +129,13 @@ static int __init device_driver_init(void)
 
 	device_create(s_dev_data.class, NULL, dev, NULL, HDMI_DEVICE_NAME);
 
-	hisi_i2c_get_reg(&sourceRegs, &sourceRegsSize);
+	i2c_get_reg(&sourceRegs, &sourceRegsSize);
 #ifdef arm_linux
-	if (!request_mem_region(sourceRegs, sourceRegsSize, "hdmi,ep952")) {
-		LogFormat(ERROR, "%s:%d\n", __FILE__, __LINE__);
-		return -1;
-	}
-
 	sourceMapRegs = (unsigned int)ioremap(sourceRegs, sourceRegsSize);
 #endif
 
 #ifdef x86_linux
-	hisi_i2c_get_reg(&sourceRegs, &sourceRegsSize);
+	i2c_get_reg(&sourceRegs, &sourceRegsSize);
 	sourceMapRegs = (unsigned int)dr_mallocz(sourceRegsSize);
 #endif
 
@@ -149,7 +144,7 @@ static int __init device_driver_init(void)
 		return -1;
 	}
 
-	hisi_i2c_set_reg(sourceMapRegs);
+	i2c_set_reg(sourceMapRegs);
 
 	result = ep952CoreInit();
 	if (result) {
@@ -163,9 +158,7 @@ static int __init device_driver_init(void)
 static void __exit device_driver_exit(void)
 {
 #ifdef arm_linux
-	gx_iounmap(sourceMapRegs);
-
-	release_mem_region(sourceRegs, sourceRegsSize);
+	iounmap((void*)sourceMapRegs);
 #endif
 
 #ifdef x86_linux

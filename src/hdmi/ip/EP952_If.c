@@ -11,7 +11,7 @@
 #include "EP952SettingsData.h"
 #include "log.h"
 #include "common.h"
-#include "../hisi_i2c.h"
+#include "../i2c.h"
 
 #if Enable_HDCP
 	#include "HDCP.h"
@@ -1033,7 +1033,7 @@ SMBUS_STATUS IIC_Write(unsigned char IICAddr, unsigned char ByteAddr, unsigned c
 
 	unsigned char status = 0;
 
-	status = hisi_i2c_write(IICAddr, ByteAddr, Data, Size);
+	status = i2c_write(IICAddr, ByteAddr, Data, Size);
 
 	return status;
 
@@ -1049,7 +1049,7 @@ SMBUS_STATUS IIC_Read(unsigned char IICAddr, unsigned char ByteAddr, unsigned ch
 
 	unsigned char status = 0;
 
-	status = hisi_i2c_read(IICAddr, ByteAddr, Data, Size);
+	status = i2c_read(IICAddr, ByteAddr, Data, Size);
 
 	return status;
 
