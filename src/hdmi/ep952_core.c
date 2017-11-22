@@ -37,7 +37,7 @@ int ep952CoreInit(void)
 		LogFormat(ERROR, "%s %d\n", __FUNCTION__, __LINE__);
 		return -1;
 	}
-	printk("%s %d\n", __FUNCTION__, __LINE__);
+	LogFormat(DEBUG, "%s %d\n", __FUNCTION__, __LINE__);
 
 	return 0;
 }
@@ -48,7 +48,7 @@ int ep952CoreDestory(void)
 	dr_thread_delete(hdmiEP952->threadId);
 	dr_free(hdmiEP952);
 	hdmiEP952 = NULL;
-	printk("%s %d\n", __FUNCTION__, __LINE__);
+	LogFormat(DEBUG, "%s %d\n", __FUNCTION__, __LINE__);
 	return 0;
 }
 

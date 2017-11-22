@@ -1,7 +1,7 @@
 #include "common.h"
 #include "log.h"
 
-static LOG_LEVEL  level  = ~0x0;
+static LOG_LEVEL  level  = DEBUG;
 
 void LogFormat(LOG_LEVEL l, const char* fmt, ...)
 {

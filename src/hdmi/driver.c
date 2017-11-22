@@ -131,6 +131,10 @@ static int __init device_driver_init(void)
 
 	i2c_get_reg(&sourceRegs, &sourceRegsSize);
 #ifdef arm_linux
+	if (!request_mem_region(sourceRegs, sourceRegsSize, HDMI_MODULE_NAME)) {
+		LogFormat(ERROR, "%s %d\n", __FUNCTION__, __LINE__);
+		return -1;
+	}
 	sourceMapRegs = (unsigned int)ioremap(sourceRegs, sourceRegsSize);
 #endif
 
@@ -145,6 +149,8 @@ static int __init device_driver_init(void)
 	}
 
 	i2c_set_reg(sourceMapRegs);
+
+	i2c_init_reg();
 
 	result = ep952CoreInit();
 	if (result) {
