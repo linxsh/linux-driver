@@ -33,19 +33,10 @@ typedef struct {
 	unsigned int sequenceCmd0;
 	unsigned int sequenceCmd1;
 	unsigned int sequenceCmd2;  /*0x00C0*/
-	unsigned int resv8[463];
-	unsigned int mode2I2cCtrl;  /*0x0800*/
-	unsigned int mode2I2cCom;
-	unsigned int mode2I2cIcr;
-	unsigned int mode2I2cSr;
-	unsigned int mode2I2cSclH;  /*0x0810*/
-	unsigned int mode2I2cSclL;
-	unsigned int mode2I2cTxr;
-	unsigned int mode2I2cRxr;
-	unsigned int resv9[504];
+	unsigned int resv8[15];
 } I2C_REG;
 
-volatile I2C_REG *i2cReg = NULL;
+I2C_REG *i2cReg = NULL;
 #define I2C_BASE_ADDR 0x12112000
 #define I2C_TIMEOUT   (0x10000)
 
@@ -57,12 +48,13 @@ int i2c_get_reg(unsigned int *regs, unsigned int *size)
 	if (size)
 		*size = sizeof(I2C_REG);
 
+	LogFormat(DEBUG, "I2C Start Addr %08x, End Addr %08x \n", I2C_BASE_ADDR, I2C_BASE_ADDR + sizeof(I2C_REG));
 	return 0;
 }
 
 int i2c_set_reg(unsigned int regs)
 {
-	i2cReg = (volatile I2C_REG *)regs;
+	i2cReg = (I2C_REG *)regs;
 	LogFormat(DEBUG, "I2C Base Addr %08x, Map Addr %08x, size %x\n",
 			(unsigned int)regs, I2C_BASE_ADDR, sizeof(I2C_REG));
 	return 0;
@@ -96,8 +88,8 @@ int i2c_set_reg(unsigned int regs)
 #define REG_GET_FIELD(reg, mask, offset)                        \
 	(((*(volatile unsigned int *)reg)>>(offset))&(mask))
 
-#define I2C_CLOCK_RATE  (40000000) /* 40MHZ  */
-#define I2C_WORKS_FREQ  (250000)   /* 300KHZ */
+#define I2C_CLOCK_RATE  (50000000) /* 50MHZ  */
+#define I2C_WORKS_FREQ  (200000)   /* 200KHZ */
 
 static inline void set_i2c_disable(void)
 {
@@ -114,7 +106,7 @@ static unsigned int lastSlaveAddr = 0;
 static inline void set_i2c_salve_addr(unsigned int addr)
 {
 	set_i2c_disable();
-	REG_SET_FIELD(&(i2cReg->tar), addr, 0x3ff, 0);
+	REG_SET_FIELD(&(i2cReg->tar), (addr>>1), 0x3ff, 0);
 	REG_CLR_BIT(&(i2cReg->tar), 12);
 	set_i2c_enable();
 	lastSlaveAddr = addr;
@@ -125,6 +117,8 @@ static inline void set_i2c_mode(void)
 	set_i2c_disable();
 	REG_CLR_BIT(&(i2cReg->sequenceCmd0),  31);
 	REG_SET_BIT(&(i2cReg->mstSingleCtrl), 31);
+	REG_SET_BIT(&(i2cReg->tar), 11);
+	REG_SET_BIT(&(i2cReg->tar), 10);
 	set_i2c_enable();
 }
 
@@ -137,7 +131,7 @@ static inline int wait_i2c_tx_nofull(void)
 		val = REG_GET_VAL(&(i2cReg->intrRaw));
 		if (val & (0x1 << 6)) {
 			val = REG_GET_VAL(&(i2cReg->txAbrtSrc));
-			LogFormat(ERROR, "TX_ABRT: 0x%x\n", val);
+			LogFormat(ERROR, "(%s %d) TX_ABRT: 0x%x\n", __FUNCTION__, __LINE__, val);
 			return -1;
 		}
 
@@ -166,7 +160,7 @@ static inline int wait_i2c_rx_noempty(void)
 		val = REG_GET_VAL(&(i2cReg->intrRaw));
 		if (val & (0x1 << 6)) {
 			val = REG_GET_VAL(&(i2cReg->txAbrtSrc));
-			LogFormat(ERROR, "TX_ABRT: 0x%x\n", val);
+			LogFormat(ERROR, "(%s %d) TX_ABRT: 0x%x\n", __FUNCTION__, __LINE__, val);
 			return -1;
 		}
 
@@ -195,7 +189,7 @@ static inline int wait_i2c_idle(void)
 		val = REG_GET_VAL(&(i2cReg->intrRaw));
 		if (val & (0x1 << 6)) {
 			val = REG_GET_VAL(&(i2cReg->txAbrtSrc));
-			LogFormat(ERROR, "TX_ABRT: 0x%x\n", val);
+			LogFormat(ERROR, "(%s %d) TX_ABRT: 0x%x\n", __FUNCTION__, __LINE__, val);
 			return -1;
 		}
 
@@ -220,7 +214,7 @@ static inline int wait_i2c_idle(void)
 		val = REG_GET_VAL(&(i2cReg->intrRaw));
 		if (val & (0x1 << 6)) {
 			val = REG_GET_VAL(&(i2cReg->txAbrtSrc));
-			LogFormat(ERROR, "TX_ABRT: 0x%x\n", val);
+			LogFormat(ERROR, "(%s %d) TX_ABRT: 0x%x\n", __FUNCTION__, __LINE__, val);
 			return -1;
 		}
 
@@ -242,8 +236,12 @@ static inline int wait_i2c_idle(void)
 
 static inline int clr_i2c_status(void)
 {
-	REG_CLR_BIT(&(i2cReg->mstSingleCtrl), 31);
-	REG_SET_BIT(&(i2cReg->mstSingleCtrl), 31);
+	unsigned int val = 0;
+
+	val  = REG_GET_VAL(&(i2cReg->mstSingleCtrl));
+	val |= (0xf << 24);
+	REG_SET_VAL(&(i2cReg->mstSingleCtrl), val & (~(0x1 << 31)));
+	REG_SET_VAL(&(i2cReg->mstSingleCtrl), val);
 	REG_SET_VAL(&(i2cReg->clrIntr), 0x1);
 
 	set_i2c_disable();
@@ -256,16 +254,15 @@ int i2c_init_reg(void)
 {
 	unsigned int sclHcnt = ((I2C_CLOCK_RATE / 100) * 36) / I2C_WORKS_FREQ;
 	unsigned int sclLcnt = ((I2C_CLOCK_RATE / 100) * 64) / I2C_WORKS_FREQ;
-	unsigned int sdaHold = sclHcnt / 2;
+	unsigned int sdaHold = sclLcnt / 2;
 
 	REG_SET_VAL(&(i2cReg->lock), 0x1ACCE551);
 	LogFormat(DEBUG, "LOCK: %08x\n", i2cReg->lock);
 
 	set_i2c_disable();
 
-	REG_SET_VAL(&(i2cReg->con), 0x0);
 	REG_SET_BIT(&(i2cReg->con), 5);
-	LogFormat(DEBUG, "CON: %08x\n", i2cReg->con);
+	LogFormat(DEBUG, "CON: %p, %08x\n", &(i2cReg->con), i2cReg->con);
 
 	REG_SET_FIELD(&(i2cReg->sclHcnt), sclHcnt, 0xffff, 0);
 	REG_SET_FIELD(&(i2cReg->sclLcnt), sclLcnt, 0xffff, 0);
@@ -288,8 +285,13 @@ int i2c_init_reg(void)
 int i2c_read(unsigned char IICAddr, unsigned char ByteAddr, unsigned char *Data, unsigned int Size)
 {
 	unsigned int i;
+	unsigned int tmp = (0x1<<30);
+	tmp &= ~(0x1<<29);
+	tmp &= ~(0x1<<28);
 
-	if (IICAddr != lastSlaveAddr) {
+	LogFormat(DEBUG, "I2C Read 0x%02x ,0x%02X, 0x%02X, %d\r\n", IICAddr, ByteAddr, Data[0], Size);
+
+	if (lastSlaveAddr != IICAddr) {
 		set_i2c_salve_addr((unsigned int)IICAddr);
 		set_i2c_mode();
 	}
@@ -297,41 +299,49 @@ int i2c_read(unsigned char IICAddr, unsigned char ByteAddr, unsigned char *Data,
 	for (i = 0; i < Size; i++) {
 		unsigned int status = 0, val = 0;
 
-		REG_SET_BIT(&(i2cReg->mstSingleCtrl), 30);
-		REG_CLR_BIT(&(i2cReg->mstSingleCtrl), 29);
-		REG_CLR_BIT(&(i2cReg->mstSingleCtrl), 28);
+		val  = REG_GET_VAL(&(i2cReg->mstSingleCtrl));
+		val &= ~(0x1 << 30) & ~(0x1 << 29) & ~(0x1 << 28);
+		val |= tmp;
+		REG_SET_VAL(&(i2cReg->mstSingleCtrl), val);
+		LogFormat(DEBUG, "read mstSingleCtrl: %x\n", val);
 
 		status = wait_i2c_tx_nofull();
 		if (status) {
-			wait_i2c_idle();
 			clr_i2c_status();
 			return 4;
 		}
 
-		REG_SET_FIELD(&(i2cReg->mstSingleCmd), ByteAddr, 0xffff, 16);
+		val = (ByteAddr << 16);
+		REG_SET_VAL(&(i2cReg->mstSingleCmd), val);
+		LogFormat(DEBUG, "read mstSingleCmd: %x\n", val);
 
 		status = wait_i2c_rx_noempty();
 		if (status) {
-			wait_i2c_idle();
 			clr_i2c_status();
 			return 2;
 		}
 
 		val = REG_GET_VAL(&(i2cReg->mstSingleCmd));
 		Data[i] = (val & 0xff);
+		LogFormat(DEBUG, "read mstSingleCmd: %x\n", val);
 
+		wait_i2c_idle();
 		clr_i2c_status();
 	}
 
-//	LogFormat(INFO, "I2C Write 0x%02x ,0x%02X, 0x%02X, %d\r\n", IICAddr, ByteAddr, Data[0], Size);
 	return 0;
 }
 
 int i2c_write(unsigned char IICAddr, unsigned char ByteAddr, unsigned char *Data, unsigned int Size)
 {
 	unsigned int i;
+	unsigned int tmp = !(0x1<<30);
+	tmp &= ~(0x1<<29);
+	tmp &= ~(0x1<<28);
 
-	if (IICAddr != lastSlaveAddr) {
+	LogFormat(DEBUG, "I2C Write 0x%02X, 0x%02X, 0x%02X, %d\r\n",IICAddr, ByteAddr, Data[0], Size);
+
+	if (lastSlaveAddr != IICAddr) {
 		set_i2c_salve_addr((unsigned int)IICAddr);
 		set_i2c_mode();
 	}
@@ -339,22 +349,24 @@ int i2c_write(unsigned char IICAddr, unsigned char ByteAddr, unsigned char *Data
 	for (i = 0; i < Size; i++) {
 		unsigned int status = 0, val = 0;
 
-		REG_CLR_BIT(&(i2cReg->mstSingleCtrl), 30);
-		REG_CLR_BIT(&(i2cReg->mstSingleCtrl), 29);
-		REG_CLR_BIT(&(i2cReg->mstSingleCtrl), 28);
+		val  = REG_GET_VAL(&(i2cReg->mstSingleCtrl));
+		val &= ~(0x1 << 30) & ~(0x1 << 29) & ~(0x1 << 28);
+		val |= tmp;
+		REG_SET_VAL(&(i2cReg->mstSingleCtrl), val);
+		LogFormat(DEBUG, "write mstSingleCtrl: %x\n", val);
 
 		status = wait_i2c_tx_nofull();
 		if (status) {
-			wait_i2c_idle();
 			clr_i2c_status();
 			return 4;
 		}
 
-		val = (((ByteAddr << 16) & 0xff) | (Data[1] & 0xff));
+		val  = ((ByteAddr << 16) | (Data[i] & 0xff));
 		REG_SET_VAL(&(i2cReg->mstSingleCmd), val);
+		LogFormat(DEBUG, "write mstSingleCmd: %x\n", val);
+		wait_i2c_idle();
 		clr_i2c_status();
 	}
 
-//	LogFormat(INFO, "I2C Read 0x%02X, 0x%02X, 0x%02X, %d\r\n",IICAddr, ByteAddr, Data[0], Size);
 	return 0;
 }

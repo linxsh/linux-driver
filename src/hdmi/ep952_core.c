@@ -20,7 +20,7 @@ static void ep952CoreThread(void *priv)
 {
 	while (hdmiEP952->threadRuning) {
 		EP_HDMI_Process();
-		dr_thread_delay(10);
+		dr_thread_delay(100);
 	}
 }
 
