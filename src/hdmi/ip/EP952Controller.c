@@ -252,14 +252,14 @@ void EP952Controller_Task(void)
 			LogFormat(INFO,"\r\n[Read EDID] :\r\n");
 			EDID_DDC_Status = Downstream_Rx_read_EDID(pEP952C_Registers->Readed_EDID);
 			if(EDID_DDC_Status) {
-				LogFormat(INFO,"WARNING: EDID read failed 0x%02X\r\n", (int)EDID_DDC_Status);
+				LogFormat(WARNING,"EDID read failed 0x%02X\r\n", (int)EDID_DDC_Status);
 				break;
 			}
 
 			// check EDID
-			is_Cap_HDMI = EDID_GetHDMICap(pEP952C_Registers->Readed_EDID);
+		is_Cap_HDMI = EDID_GetHDMICap(pEP952C_Registers->Readed_EDID);
 			if(is_Cap_HDMI) {
-				LogFormat(INFO,"EDID : Support HDMI");
+				LogFormat(INFO,"EDID : Support HDMI\n");
 
 				// Default Capability
 				is_Cap_YCC444 =	0;
@@ -270,11 +270,11 @@ void EP952Controller_Task(void)
 				if(!EDID_DDC_Status) {
 					if(pEP952C_Registers->Readed_EDID[131] & 0x20) {	// Support YCC444
 						is_Cap_YCC444 = 1;
-						LogFormat(INFO," YCC444");
+						LogFormat(INFO," YCC444\n");
 					}
 					if(pEP952C_Registers->Readed_EDID[131] & 0x10) {	// Support YCC422
 						is_Cap_YCC422 = 1;
-						LogFormat(INFO," YCC422");
+						LogFormat(INFO," YCC422\n");
 					}
 					LogFormat(INFO,"\r\n");
 
@@ -411,7 +411,7 @@ void EP952Controller_Task(void)
 			pEP952C_Registers->HDCP_Status = HDCP_Get_Status();
 			if(pEP952C_Registers->HDCP_Status != 0)
 			{
-				LogFormat(INFO,"ERROR : HDCP_Status = 0x%02X\r\n",(int)pEP952C_Registers->HDCP_Status);
+				LogFormat(ERROR, "HDCP_Status = 0x%02X\r\n",(int)pEP952C_Registers->HDCP_Status);
 
 				TXS_RollBack_HDCP();
 				TXS_RollBack_Stream();
@@ -643,7 +643,7 @@ void EP952_Audio_reg_set(void)
 		// mute control
 		HDMI_Tx_AMute_Disable();
 	} else {
-		LogFormat(INFO,"[Warning]: Audio Mute Enable (Audio Sample Frequency = %d, VIC = %d)\r\n"
+		LogFormat(WARNING,"Audio Mute Enable (Audio Sample Frequency = %d, VIC = %d)\r\n"
 					,(int)pEP952C_Registers->Audio_Input_Format
 					,(int)pEP952C_Registers->Video_Input_Format[0]);
 	}
@@ -714,17 +714,17 @@ void EP_HDMI_DumpMessage(void)
 {
 	unsigned char temp_R = 0xFF, reg_addr = 0;
 
-	LogFormat(INFO,"[EP952 Register value]\r\n");
-	LogFormat(INFO,"    -0 -1 -2 -3 -4 -5 -6 -7 -8 -9 -A -B -C -D -E -F\r\n");
-	LogFormat(INFO,"    -----------------------------------------------");
+	LogFormat(DEBUG,"[EP952 Register value]\r\n");
+	LogFormat(DEBUG,"    -0 -1 -2 -3 -4 -5 -6 -7 -8 -9 -A -B -C -D -E -F\r\n");
+	LogFormat(DEBUG,"    -----------------------------------------------");
 	for (reg_addr=0; reg_addr<=0x88; reg_addr++) {
 		EP952_Reg_Read(reg_addr, &temp_R, 1);
 
 		if (reg_addr%16 == 0) {
-			LogFormat(INFO,"\r\n%02X| ",(int)((reg_addr/16)<<4));
+			LogFormat(DEBUG,"\r\n%02X|\n",(int)((reg_addr/16)<<4));
 		}
-		LogFormat(INFO,"%02X ",(int)temp_R);
+		LogFormat(DEBUG,"%02X\n",(int)temp_R);
 	}
-	LogFormat(INFO,"\r\n");
-	LogFormat(INFO,"    -----------------------------------------------\r\n");
+	LogFormat(DEBUG,"\r\n");
+	LogFormat(DEBUG,"-----------------------------------------------\r\n");
 }

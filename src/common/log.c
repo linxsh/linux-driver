@@ -1,7 +1,7 @@
 #include "common.h"
 #include "log.h"
 
-static LOG_LEVEL  level  = ERROR;
+static LOG_LEVEL  level  = ERROR|INFO|WARNING;
 
 void LogFormat(LOG_LEVEL l, const char* fmt, ...)
 {

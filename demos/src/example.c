@@ -20,7 +20,7 @@ int main()
 		return -1;
 	}
 
-	audioFmt.select     = AUDIO_SEL_I2S;
+	audioFmt.select     = AUDIO_SEL_SPDIF;
 	audioFmt.sampleRate = AUDIO_SF_48000Hz;
 	ret = ioctl(handle, HDMI_EP952_SET_AUDIO_FMT, (void*)&audioFmt);
 	if (ret < 0) {

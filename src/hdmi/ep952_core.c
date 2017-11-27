@@ -20,7 +20,7 @@ static void ep952CoreThread(void *priv)
 {
 	while (hdmiEP952->threadRuning) {
 		EP_HDMI_Process();
-		dr_thread_delay(100);
+		dr_thread_delay(10);
 	}
 }
 
@@ -74,7 +74,7 @@ int ep952CoreIoctl(void* priv, unsigned int cmd, void *arg)
 				HDMI_EP952_AUDIO_FMT fmt;
 
 				if (copy_from_user((void*)&fmt,
-							(void*)arg, sizeof(HDMI_EP952_SET_AUDIO_FMT))) {
+							(void*)arg, sizeof(HDMI_EP952_AUDIO_FMT))) {
 					LogFormat(ERROR, "%s %d\n", __FUNCTION__, __LINE__);
 					return -1;
 				}

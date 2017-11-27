@@ -1,5 +1,6 @@
 #include "EP952api.h"
 #include "EP952Controller.h"  // HDMI Transmiter
+#include "log.h"
 
 /*
 ============================================================================
@@ -71,6 +72,8 @@ void  EP_HDMI_Set_Audio_Fmt(HDMI_AudFmt_t  Audfmt, HDMI_AudFreq  Audfreq)
 	}
 	EP952C_Registers.Audio_Input_Format = Audfreq;		// set Audio frequency
 	EP952C_Registers.Audio_change = 1;					// Audio setting change flag
+	LogFormat(INFO, "%s %d: audio interface 0x%x, format %d\n",
+			__FUNCTION__, __LINE__, EP952C_Registers.Audio_Interface, EP952C_Registers.Audio_Input_Format);
 }
 
 void EP_HDMI_Set_Video_Timing(unsigned char VIC)
@@ -83,7 +86,7 @@ void EP_HDMI_Set_Video_Timing(unsigned char VIC)
 	unsigned char EDGE  = (0x1<<1)&0xf;
 	unsigned char FMT12 = (0x0<<0)&0xf;
 	unsigned char SYNC    = (0x0<<0)&0xf;
-	unsigned char VIN_FMT = (0x1<<2)&0xf;
+	unsigned char VIN_FMT = (0x1<<1)&0xf;
 
 	// reference to Video_Interface[0].jpg;
 	EP952C_Registers.Video_Interface[0] = DK|DKEN|DSEL|BSEL|EDGE|FMT12;
@@ -129,6 +132,9 @@ void EP_HDMI_Set_Video_Timing(unsigned char VIC)
 	// need to select video timing, timing detail description as below
 	EP952C_Registers.Video_Input_Format[0] = VIC;
 	EP952C_Registers.Video_change = 1;
+	LogFormat(INFO, "%s %d: video interface0 0x%x, interface1 0x%x, format %d\n",
+			__FUNCTION__, __LINE__,
+			EP952C_Registers.Video_Interface[0], EP952C_Registers.Video_Interface[1], EP952C_Registers.Video_Input_Format[0]);
 }
 
 void EP_HDMI_Init(void)

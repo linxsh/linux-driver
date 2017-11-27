@@ -175,13 +175,11 @@ EDID_STATUS Downstream_Rx_read_EDID(unsigned char *pEDID)
 		LogFormat(ERROR, " EDID b0 read - DN DDC %d\r\n", (int)status);
 		return status;
 	}
-	//LogFormat("EDID b0 read:");
+	LogFormat(DEBUG, "EDID b0 read:\n");
 	for(i=0; i<128; ++i) {
-		if(i%16 == 0) LogFormat(INFO, "\r\n");
-		if(i%8 == 0)  LogFormat(INFO, " ");
-		LogFormat(INFO, "0x%02X, ", (int)pEDID[i]);
+		LogFormat(DEBUG, "%d 0x%02X\n", i, (int)pEDID[i]);
 	}
-	LogFormat(INFO, "\r\n");
+	LogFormat(DEBUG, "\r\n");
 
 	// =========================================================
 	// II. Read other blocks and find Timing Extension Block
@@ -210,15 +208,13 @@ EDID_STATUS Downstream_Rx_read_EDID(unsigned char *pEDID)
 				dr_memcpy(&pEDID[128], DDC_Data, 128);
 			}
 			
-			//LogFormat("EDID b%d read:", (int)seg_ptr));
+			LogFormat(DEBUG, "EDID b%d read:\n", (int)seg_ptr);
 			for(i=0; i<128; ++i) {
-				if(i%16 == 0) LogFormat(INFO, "\r\n");
-				if(i%8 == 0)  LogFormat(INFO, " ");
-				LogFormat(INFO, "0x%02X, ", (int)DDC_Data[i]);
+				LogFormat(DEBUG, "%d 0x%02X\n", i, (int)DDC_Data[i]);
 			}
-			LogFormat(INFO, "\r\n");
+			LogFormat(DEBUG, "\r\n");
 		}
-		LogFormat(INFO, "\r\n");
+		LogFormat(DEBUG, "\r\n");
 	}
 		
 	if(Block1Found) {

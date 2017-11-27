@@ -311,7 +311,7 @@ int i2c_read(unsigned char IICAddr, unsigned char ByteAddr, unsigned char *Data,
 			return 4;
 		}
 
-		val = (ByteAddr << 16);
+		val = ((ByteAddr + i) << 16);
 		REG_SET_VAL(&(i2cReg->mstSingleCmd), val);
 		LogFormat(DEBUG, "read mstSingleCmd: %x\n", val);
 
@@ -361,7 +361,7 @@ int i2c_write(unsigned char IICAddr, unsigned char ByteAddr, unsigned char *Data
 			return 4;
 		}
 
-		val  = ((ByteAddr << 16) | (Data[i] & 0xff));
+		val  = (((ByteAddr + 1) << 16) | (Data[i] & 0xff));
 		REG_SET_VAL(&(i2cReg->mstSingleCmd), val);
 		LogFormat(DEBUG, "write mstSingleCmd: %x\n", val);
 		wait_i2c_idle();
