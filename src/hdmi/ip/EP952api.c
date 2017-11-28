@@ -73,17 +73,17 @@ void  EP_HDMI_Set_Audio_Fmt(HDMI_AudFmt_t  Audfmt, HDMI_AudFreq  Audfreq)
 	EP952C_Registers.Audio_change = 1;					// Audio setting change flag
 }
 
-void EP_HDMI_Set_Video_Timing(unsigned char VIC)
+void EP_HDMI_Set_Video_Timing(unsigned char VIC, unsigned char format)
 {
 	// need to select EP952 video input interface
-	unsigned char DK    = (0x4<<5)&0xf;
-	unsigned char DKEN  = (0x1<<4)&0xf;
-	unsigned char DSEL  = (0x1<<3)&0xf;
-	unsigned char BSEL  = (0x1<<2)&0xf;
-	unsigned char EDGE  = (0x1<<1)&0xf;
-	unsigned char FMT12 = (0x0<<0)&0xf;
-	unsigned char SYNC    = (0x0<<0)&0xf;
-	unsigned char VIN_FMT = (0x1<<2)&0xf;
+	unsigned char DK    = (0x0<<5)&0xff; //0ps 3bits
+	unsigned char DKEN  = (0x0<<4)&0xff; //0: skewing disable 1: select dk
+	unsigned char DSEL  = (0x1<<3)&0xff; //1: both rasing and falling edge, 0: single edge
+	unsigned char BSEL  = (0x1<<2)&0xff; //1: 24bits 0: 12bits
+	unsigned char EDGE  = (0x1<<1)&0xff; //if DSel 0, edge 0: falling 1: rasing
+	unsigned char FMT12 = (0x1<<0)&0xff; //if Bsel 0, 1: map yuv422, 0 24bits
+	unsigned char SYNC    = (0x0<<2)&0xff; //0: DE, HS, VS 1:
+	unsigned char VIN_FMT = (format<<0)&0xff; //0: rgb444 1: yuv444 2: yuv422
 
 	// reference to Video_Interface[0].jpg;
 	EP952C_Registers.Video_Interface[0] = DK|DKEN|DSEL|BSEL|EDGE|FMT12;
