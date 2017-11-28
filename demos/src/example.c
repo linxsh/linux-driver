@@ -28,7 +28,8 @@ int main()
 		return -1;
 	}
 
-	videoFmt.resolution = HDMI_EP852_1920x1080I_50Hz_16_9;
+	videoFmt.format     = HDMI_EP952_YUV422;
+	videoFmt.resolution = HDMI_EP952_1920x1080P_30Hz_16_9;
 	ret = ioctl(handle, HDMI_EP952_SET_VIDEO_FMT, (void*)&videoFmt);
 	if (ret < 0) {
 		printf("%s %d\n", __FUNCTION__, __LINE__);

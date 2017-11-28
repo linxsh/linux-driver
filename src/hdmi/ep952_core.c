@@ -9,9 +9,10 @@ typedef struct {
 	unsigned char inited;
 	void *threadId;
 	unsigned int threadRuning;
-	HDMI_EP952_AUDIO_SELECT     audioSelect;
-	HDMI_EP952_AUDIO_SAMPLERATE audioSampleRate;
-	HDMI_EP952_VIDEO_RESOLUTION videoResolution;
+	HDMI_EP952_AUDIO_SELECT            audioSelect;
+	HDMI_EP952_AUDIO_SAMPLERATE        audioSampleRate;
+	HDMI_EP952_VIDEO_OUTPUT_RESOLUTION videoResolution;
+	HDMI_EP952_VIDEO_INPUT_FORMAT      videoFormat;
 } DR_HDMI_EP592;
 
 DR_HDMI_EP592 *hdmiEP952 = NULL;
@@ -94,7 +95,8 @@ int ep952CoreIoctl(void* priv, unsigned int cmd, void *arg)
 					return -1;
 				}
 				hdmiEP952->videoResolution = fmt.resolution;
-				EP_HDMI_Set_Video_Timing(fmt.resolution);
+				hdmiEP952->videoFormat     = fmt.format;
+				EP_HDMI_Set_Video_Timing(fmt.resolution, fmt.format);
 			}
 			break;
 		default:

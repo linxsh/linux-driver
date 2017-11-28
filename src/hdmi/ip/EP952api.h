@@ -71,7 +71,7 @@ typedef enum {
 //--------------------------------------------------------------------------------------------------
 void EP_EP952_Reset(void);
 void EP_HDMI_Set_Audio_Fmt(HDMI_AudFmt_t Audfmt, HDMI_AudFreq Audfreq);
-void EP_HDMI_Set_Video_Timing(unsigned char VIC);
+void EP_HDMI_Set_Video_Timing(unsigned char VIC, unsigned char format);
 void EP_HDMI_Init(void);
 void EP_HDMI_Process(void);
 //--------------------------------------------------------------------------------------------------
