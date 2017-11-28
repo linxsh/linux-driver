@@ -226,7 +226,7 @@ void EP952Controller_Task(void)
 				LogFormat(INFO,"#####################\r\n");
 				// power down EP952 Tx
 				HDMI_Tx_Power_Down();
-				LogFormat(INFO,"\r\nState Transist: Power Down -> [TXS_Search_EDID]\r\n");
+				LogFormat(INFO,"State Transist: Power Down -> [TXS_Search_EDID]\r\n");
 				TX_State = TXS_Search_EDID;
 			}
 		}
@@ -249,7 +249,7 @@ void EP952Controller_Task(void)
 			// clear EDID buffer
 			dr_memset(pEP952C_Registers->Readed_EDID, 0xFF, 256);
 			// Read EDID
-			LogFormat(INFO,"\r\n[Read EDID] :\r\n");
+			LogFormat(INFO,"[Read EDID] :\r\n");
 			EDID_DDC_Status = Downstream_Rx_read_EDID(pEP952C_Registers->Readed_EDID);
 			if(EDID_DDC_Status) {
 				LogFormat(WARNING,"EDID read failed 0x%02X\r\n", (int)EDID_DDC_Status);
@@ -304,7 +304,7 @@ void EP952Controller_Task(void)
 
 			is_Connected = 1; // HDMI is connected
 
-			LogFormat(INFO,"\r\nState Transit: Read EDID -> [TXS_Wait_Upstream]\r\n");
+			LogFormat(INFO,"State Transit: Read EDID -> [TXS_Wait_Upstream]\r\n");
 			TX_State = TXS_Wait_Upstream;
 		}
 		break;
@@ -323,7 +323,7 @@ void EP952Controller_Task(void)
 			// Power Up Tx
 			HDMI_Tx_Power_Up();
 
-			LogFormat(INFO,"\r\nState Transist: Power Up -> [TXS_Stream]\r\n");
+			LogFormat(INFO,"State Transist: Power Up -> [TXS_Stream]\r\n");
 			TX_State = TXS_Stream;
 		}
 		break;
@@ -339,18 +339,18 @@ void EP952Controller_Task(void)
 			TXS_RollBack_Stream();
 			pEP952C_Registers->Video_change = 0;
 			if(pEP952C_Registers->Video_Input_Format[0] != 0){
-				LogFormat(INFO,"\r\nState Transit: Video Source Change -> [TXS_Wait_Upstream]\r\n");
+				LogFormat(INFO,"State Transit: Video Source Change -> [TXS_Wait_Upstream]\r\n");
 				TX_State = TXS_Wait_Upstream;
 			}
 			else{
-				LogFormat(INFO,"\r\nState Transit: VIC = %d -> [TXS_Search_EDID]\r\n",
+				LogFormat(INFO,"State Transit: VIC = %d -> [TXS_Search_EDID]\r\n",
 						(int)pEP952C_Registers->Video_Input_Format[0]);
 				TX_State = TXS_Search_EDID;
 			}
 		}
 
 		if(!is_Connected) {						// HDMI	not connected
-			LogFormat(INFO,"\r\nTXS_Stream: HDMI is not Connected\r\n");
+			LogFormat(INFO,"TXS_Stream: HDMI is not Connected\r\n");
 			TXS_RollBack_Stream();
 			TX_State = TXS_Search_EDID;
 		}
@@ -444,9 +444,9 @@ void EP952_Video_reg_set(void)
 		///////////////////////////////////////////////////////////////////////
 		// Update Video Params
 		//
-		LogFormat(INFO,"pEP952 Video_Interface[0] = 0x%02X\r\n",(int)pEP952C_Registers->Video_Interface[0]);
-		LogFormat(INFO,"pEP952 Video_Interface[1] = 0x%02X\r\n",(int)pEP952C_Registers->Video_Interface[1]);
-		LogFormat(INFO,"pEP952 Video_Output_Format = 0x%02X \r\n",(int)pEP952C_Registers->Video_Output_Format );
+		LogFormat(INFO,"pEP952 Video_Interface[0]    = 0x%02X\r\n",(int)pEP952C_Registers->Video_Interface[0]);
+		LogFormat(INFO,"pEP952 Video_Interface[1]    = 0x%02X\r\n",(int)pEP952C_Registers->Video_Interface[1]);
+		LogFormat(INFO,"pEP952 Video_Output_Format   = 0x%02X \r\n",(int)pEP952C_Registers->Video_Output_Format );
 		LogFormat(INFO,"pEP952 Video_Input_Format[0] = 0x%02X \r\n",(int)pEP952C_Registers->Video_Input_Format[0] );
 
 		// Video Interface
@@ -529,7 +529,7 @@ void EP952_Video_reg_set(void)
 	}
 	else
 	{
-		LogFormat(INFO,"### [Warning]: Tx Mute Enable (VIC = %d) ###\r\n"
+		LogFormat(WARNING,"### [Warning]: Tx Mute Enable (VIC = %d) ###\r\n"
 					,(int)pEP952C_Registers->Video_Input_Format[0]);
 	}
 
@@ -540,7 +540,7 @@ void EP952_Video_reg_set(void)
 
 void EP952_Audio_reg_set(void)
 {
-	LogFormat(INFO,"\r\n ========== EP952 Audio Parameter setting ==========\r\n");
+	LogFormat(INFO,"========== EP952 Audio Parameter setting ==========\r\n");
 
 	// Mute Control
 	HDMI_Tx_AMute_Enable();

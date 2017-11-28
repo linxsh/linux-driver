@@ -128,15 +128,15 @@ void EP952_Info_Reset(void)
 void HDMI_Tx_Power_Down(void)
 {
 	// Software power down
-	EP952_Reg_Clear_Bit(EP952_General_Control_1, EP952_General_Control_1__PU);
-	LogFormat(INFO,"< EP952 Tx Power Down >\r\n");
+	unsigned int ret = EP952_Reg_Clear_Bit(EP952_General_Control_1, EP952_General_Control_1__PU);
+	LogFormat(INFO,"< EP952 Tx Power Down [%d]>\r\n", ret);
 }
 
 void HDMI_Tx_Power_Up(void)
 {
 	// Software power up
-	EP952_Reg_Set_Bit(EP952_General_Control_1, EP952_General_Control_1__PU);	
-	LogFormat(INFO,"< EP952 Tx Power Up >\r\n");
+	unsigned int ret = EP952_Reg_Set_Bit(EP952_General_Control_1, EP952_General_Control_1__PU);	
+	LogFormat(INFO,"< EP952 Tx Power Up [%d]>\r\n", ret);
 }
 
 unsigned char HDMI_Tx_HTPLG(void)
@@ -334,7 +334,7 @@ void HDMI_Tx_VMute_Disable(void)
 void HDMI_Tx_Video_Config(PVDO_PARAMS Params)
 {
 	int i;
-	LogFormat(INFO,"\r\n ========== Update EP952 video Registers ==========\r\n");
+	LogFormat(INFO," ========== Update EP952 video Registers ==========\r\n");
 
 	// Disable auto transmission AVI packet 
 	EP952_Reg_Clear_Bit(EP952_IIS_Control, EP952_IIS_Control__AVI_EN);
@@ -448,11 +448,11 @@ void HDMI_Tx_Video_Config(PVDO_PARAMS Params)
 				EP952_Reg_Write(EP952_DE_LIN, Temp_Data, 2);
 			#endif
 
-				LogFormat(INFO,"EP952 DE_GEN params (DE_DLY=%u", (unsigned short)EP952_VDO_Settings[Params->VideoSettingIndex].DE_Gen.DE_DLY);
-				LogFormat(INFO,", DE_CNT=%u", (unsigned short)EP952_VDO_Settings[Params->VideoSettingIndex].DE_Gen.DE_CNT);
-				LogFormat(INFO,", DE_TOP=%u", (unsigned short)EP952_VDO_Settings[Params->VideoSettingIndex].DE_Gen.DE_TOP);
-				LogFormat(INFO,", DE_LIN=%u)", (unsigned short)EP952_VDO_Settings[Params->VideoSettingIndex].DE_Gen.DE_LIN);
-				LogFormat(INFO,")\r\n");
+				LogFormat(INFO,"EP952 DE_GEN params (DE_DLY=%u, DE_CNT=%u, DE_TOP=%u, DE_LIN=%u)\r\n",
+						(unsigned short)EP952_VDO_Settings[Params->VideoSettingIndex].DE_Gen.DE_DLY,
+						(unsigned short)EP952_VDO_Settings[Params->VideoSettingIndex].DE_Gen.DE_CNT,
+						(unsigned short)EP952_VDO_Settings[Params->VideoSettingIndex].DE_Gen.DE_TOP,
+						(unsigned short)EP952_VDO_Settings[Params->VideoSettingIndex].DE_Gen.DE_LIN);
 			}
 			else {
 				LogFormat(INFO,"ERROR: VideoCode overflow DE_GEN table\r\n");
@@ -515,13 +515,13 @@ void HDMI_Tx_Video_Config(PVDO_PARAMS Params)
 				EP952_Reg_Write(EP952_V_Off_Set, Temp_Data, 2);
 			#endif
 
-				LogFormat(INFO,"EP952 E_SYNC params (CTL=0x%02X", (unsigned short)EP952_VDO_Settings[Params->VideoSettingIndex].E_Sync.CTL);
-				LogFormat(INFO,", H_DLY=%u", (unsigned short)EP952_VDO_Settings[Params->VideoSettingIndex].E_Sync.H_DLY);
-				LogFormat(INFO,", H_WIDTH=%u", (unsigned short)EP952_VDO_Settings[Params->VideoSettingIndex].E_Sync.H_WIDTH);
-				LogFormat(INFO,", V_DLY=%u", (unsigned short)EP952_VDO_Settings[Params->VideoSettingIndex].E_Sync.V_DLY);
-				LogFormat(INFO,", V_WIDTH=%u", (unsigned short)EP952_VDO_Settings[Params->VideoSettingIndex].E_Sync.V_WIDTH);
-				LogFormat(INFO,", V_OFST=%u", (unsigned short)EP952_VDO_Settings[Params->VideoSettingIndex].E_Sync.V_OFST);
-				LogFormat(INFO,")\r\n");
+				LogFormat(INFO,"EP952 E_SYNC params (CTL=0x%02X, H_DLY=%u, H_WIDTH=%u, V_DLY=%u, V_WIDTH=%u, V_OFST=%u)\r\n",
+						(unsigned short)EP952_VDO_Settings[Params->VideoSettingIndex].E_Sync.CTL,
+						(unsigned short)EP952_VDO_Settings[Params->VideoSettingIndex].E_Sync.H_DLY,
+						(unsigned short)EP952_VDO_Settings[Params->VideoSettingIndex].E_Sync.H_WIDTH,
+						(unsigned short)EP952_VDO_Settings[Params->VideoSettingIndex].E_Sync.V_DLY,
+						(unsigned short)EP952_VDO_Settings[Params->VideoSettingIndex].E_Sync.V_WIDTH,
+						(unsigned short)EP952_VDO_Settings[Params->VideoSettingIndex].E_Sync.V_OFST);
 
 				// Regular VSO_POL, HSO_POL
 				if(EP952_VDO_Settings[Params->VideoSettingIndex].HVRes_Type.HVPol & VNegHPos) { // VNeg?
@@ -607,13 +607,13 @@ void HDMI_Tx_Video_Config(PVDO_PARAMS Params)
 		case COLORSPACE_601:
 			// Set to 601
 			EP952_Reg_Clear_Bit(EP952_Color_Space_Control, EP952_Color_Space_Control__COLOR);
-			LogFormat(INFO,"EP952 Set to 601 color definition ");
+			LogFormat(INFO,"EP952 Set to 601 color definition \r\n");
 			break;
 
 		case COLORSPACE_709:
 			// Set to 709
 			EP952_Reg_Set_Bit(EP952_Color_Space_Control, EP952_Color_Space_Control__COLOR);
-			LogFormat(INFO,"EP952 Set to 709 color definition ");
+			LogFormat(INFO,"EP952 Set to 709 color definition \r\n");
 			break;
 	}
 	LogFormat(INFO,"(VIC=%d) \r\n",(int)Params->VideoSettingIndex);
@@ -695,9 +695,9 @@ void HDMI_Tx_Video_Config(PVDO_PARAMS Params)
 	EP952_Reg_Write(EP952_AVI_Packet, Temp_Data, 14);
 
 	// print for debug
-	LogFormat(INFO,"EP952 set AVI Info: ");
+	LogFormat(INFO,"EP952 set AVI Info:\n");
 	for(i=0; i<6; ++i) {
-		LogFormat(INFO,"[%d]0x%02X, ",(int)i, (int)Temp_Data[i] );
+		LogFormat(INFO,"[%d]0x%02X\n",(int)i, (int)Temp_Data[i] );
 	}
 	LogFormat(INFO,"\r\n");
 
@@ -818,9 +818,9 @@ void HDMI_Tx_Audio_Config(PADO_PARAMS Params)
 		EP952_Reg_Write(EP952_Channel_Status, Temp_Data, 5);
 
 		// print for debug
-		LogFormat(INFO,"EP952 set CS Info: ");
+		LogFormat(INFO,"EP952 set CS Info: \r\n");
 		for(i=0; i<5; ++i) {
-			LogFormat(INFO,"0x%02X, ", (int)Temp_Data[i] );
+			LogFormat(INFO,"0x%02X\n", (int)Temp_Data[i] );
 		}
 		LogFormat(INFO,"\r\n");
 
@@ -920,7 +920,6 @@ void HDMI_Tx_Audio_Config(PADO_PARAMS Params)
 
 	LogFormat(INFO," table[%d]: N=%ld, CTS=%ld (VIC=%d)\r\n", (int)N_CTS_Index, N_Value, CTS_Value, (int)Params->VideoSettingIndex);
 
-	/*
 	// for debug
 	EP952_Reg_Read(EP952_CTS_H, Temp_Data, 1);
 	LogFormat(INFO,"EP952_CTS_0(Reg addr 0x60) = 0x%02X\r\n",(int)Temp_Data[0]);
@@ -934,7 +933,6 @@ void HDMI_Tx_Audio_Config(PADO_PARAMS Params)
 	LogFormat(INFO,"EP952_N_1(Reg addr 0x64) = 0x%02X\r\n",(int)Temp_Data[0]);
 	EP952_Reg_Read(EP952_N_L, Temp_Data, 1);
 	LogFormat(INFO,"EP952_N_2(Reg addr 0x65) = 0x%02X\r\n",(int)Temp_Data[0]);
-	*/
 
 	//////////////////////////////////////////////////////
 	// ADO InfoFrame
@@ -958,9 +956,9 @@ void HDMI_Tx_Audio_Config(PADO_PARAMS Params)
 	EP952_Reg_Write(EP952_ADO_Packet, Temp_Data, 6);
 
 	// print for Debug 
-	LogFormat(INFO,"EP952 set ADO Info: ");
+	LogFormat(INFO,"EP952 set ADO Info: \r\n");
 	for(i=0; i<6; ++i) {
-		LogFormat(INFO,"[%d]0x%02X, ",(int)i, (int)Temp_Data[i] );
+		LogFormat(INFO,"[%d]0x%02X\n",(int)i, (int)Temp_Data[i] );
 	}
 	LogFormat(INFO,"\r\n");
 

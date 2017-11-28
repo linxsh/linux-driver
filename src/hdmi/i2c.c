@@ -361,7 +361,7 @@ int i2c_write(unsigned char IICAddr, unsigned char ByteAddr, unsigned char *Data
 			return 4;
 		}
 
-		val  = (((ByteAddr + 1) << 16) | (Data[i] & 0xff));
+		val  = (((ByteAddr + i) << 16) | (Data[i] & 0xff));
 		REG_SET_VAL(&(i2cReg->mstSingleCmd), val);
 		LogFormat(DEBUG, "write mstSingleCmd: %x\n", val);
 		wait_i2c_idle();
